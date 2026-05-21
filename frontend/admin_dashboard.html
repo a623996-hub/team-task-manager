@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Dashboard</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+
+body{
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+}
+
+/* NAVBAR */
+.navbar{
+    background: rgba(0,0,0,0.25);
+    color: white;
+    padding: 15px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+}
+
+/* CONTAINER */
+.container{
+    max-width: 1000px;
+    margin: auto;
+    padding: 20px;
+}
+
+/* CARD */
+.card{
+    background: white;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+/* TITLE */
+.section-title{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+/* ICON */
+.icon-circle{
+    width: 45px;
+    height: 45px;
+    background: #eef2ff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #4f46e5;
+}
+
+/* INPUT */
+input{
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+/* BUTTON */
+button{
+    padding: 10px;
+    margin-top: 10px;
+    border: none;
+    background: #4f46e5;
+    color: white;
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+button:hover{
+    background: #4338ca;
+}
+
+/* TASK GRID FIX */
+.task-grid{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+/* TASK BOX (CENTER FIXED) */
+.task-box{
+    background: #ffffff;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 5px 12px rgba(0,0,0,0.1);
+    text-align: center;
+    border: 1px solid #eee;
+}
+
+/* DELETE BUTTON SMALL */
+.delete-btn{
+    background: #ef4444;
+    padding: 6px 10px;
+    font-size: 12px;
+    margin-top: 10px;
+    border-radius: 6px;
+}
+
+.delete-btn:hover{
+    background: #dc2626;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="navbar">
+    Admin Dashboard - Task Manager
+</div>
+
+<div class="container">
+
+    <!-- PROJECT -->
+    <div class="card">
+
+        <div class="section-title">
+            <div class="icon-circle"><i class="fa-solid fa-folder-plus"></i></div>
+            Create Project
+        </div>
+
+        <input id="projectName" placeholder="Project Name">
+        <input id="projectDesc" placeholder="Description">
+        <input id="createdBy" placeholder="Admin User ID">
+
+        <button onclick="createProject()">Create Project</button>
+    </div>
+
+    <!-- TASK -->
+    <div class="card">
+
+        <div class="section-title">
+            <div class="icon-circle"><i class="fa-solid fa-list-check"></i></div>
+            Create Task
+        </div>
+
+        <input id="taskTitle" placeholder="Task Title">
+        <input id="taskDesc" placeholder="Description">
+        <input id="projectId" placeholder="Project ID">
+        <input id="assignedTo" placeholder="Assign User ID">
+
+        <button onclick="createTask()">Create Task</button>
+    </div>
+
+    <!-- ALL TASKS -->
+    <div class="card">
+
+        <div class="section-title" style="justify-content:center;">
+            <div class="icon-circle"><i class="fa-solid fa-tasks"></i></div>
+            All Tasks
+        </div>
+
+        <div style="text-align:center;">
+            <button onclick="loadTasks()">Load Tasks</button>
+        </div>
+
+        <!-- GRID FIX HERE -->
+        <div id="taskList" class="task-grid"></div>
+
+    </div>
+
+</div>
+
+<script>
+
+const BASE_URL = "http://127.0.0.1:8000";
+
+/* PROJECT */
+async function createProject(){
+
+    const data = {
+        name: document.getElementById("projectName").value,
+        description: document.getElementById("projectDesc").value,
+        created_by: Number(document.getElementById("createdBy").value)
+    };
+
+    const res = await fetch(`${BASE_URL}/projects`, {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify(data)
+    });
+
+    const result = await res.json();
+    alert(result.message || result.error);
+}
+
+/* TASK */
+async function createTask(){
+
+    const data = {
+        title: document.getElementById("taskTitle").value,
+        description: document.getElementById("taskDesc").value,
+        project_id: Number(document.getElementById("projectId").value),
+        assigned_to: Number(document.getElementById("assignedTo").value)
+    };
+
+    const res = await fetch(`${BASE_URL}/tasks`, {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify(data)
+    });
+
+    const result = await res.json();
+    alert(result.message || result.error);
+}
+
+/* LOAD TASKS */
+async function loadTasks(){
+
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    const res = await fetch(`${BASE_URL}/tasks?role=${user.role}&user_id=${user.id}`);
+
+    const tasks = await res.json();
+
+    const container = document.getElementById("taskList");
+    container.innerHTML = "";
+
+    tasks.forEach(task => {
+
+        container.innerHTML += `
+            <div class="task-box">
+
+                <b>${task.title}</b>
+                <p>Status: ${task.status}</p>
+
+                <button class="delete-btn" onclick="deleteTask(${task.id})">
+                    Delete
+                </button>
+
+            </div>
+        `;
+    });
+}
+
+/* DELETE */
+async function deleteTask(id){
+
+    await fetch(`${BASE_URL}/tasks/${id}`, {
+        method: "DELETE"
+    });
+
+    loadTasks();
+}
+
+</script>
+
+</body>
+</html>

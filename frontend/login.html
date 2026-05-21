@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Task Manager</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .login-box {
+            width: 350px;
+            padding: 30px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            text-align: center;
+            color: white;
+        }
+
+        .icon-circle {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 15px auto;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .icon-circle i {
+            font-size: 35px;
+            color: #4f46e5;
+           
+        }
+
+        .input-box {
+            margin: 15px 0;
+        }
+
+        input {
+            width: 90%;
+            padding: 10px;
+            border: none;
+            border-radius: 10px;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 10px;
+            background: #4f46e5;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #4338ca;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="login-box">
+
+    <div class="icon-circle">
+        <i class="fa-solid fa-user"></i>
+    </div>  
+
+    <h2>Login</h2>
+
+    <div class="input-box">
+        <input type="email" id="email" placeholder="Email">
+    </div>
+
+    <div class="input-box">
+        <input type="password" id="password" placeholder="Password">
+    </div>
+
+    <button onclick="login()">Login</button>
+
+</div>
+
+<script>
+
+async function login() {
+
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    const res = await fetch("http://127.0.0.1:8000/auth/login", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            email: email,
+            password: password
+        })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+
+        // store user
+        localStorage.setItem("user", JSON.stringify(data.user));
+
+        alert("Login Successful!");
+
+        console.log(data.user); // DEBUG (avoid object display issue)
+
+        // role redirect
+        if (data.user.role === "admin") {
+            window.location.href = "admin_dashboard.html";
+        } else {
+            window.location.href = "user_dashboard.html";
+        }
+
+    } else {
+        alert(data.detail || "Login failed");
+    }
+}
+
+</script>
+
+</body>
+</html>
