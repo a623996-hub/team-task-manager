@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from backend.database import SessionLocal
@@ -49,17 +51,27 @@ def create_task(task: TaskCreate, db: Session = Depends(get_db)):
 
     return {"message": "Task created successfully", "task_id": new_task.id}
 
-
 # =========================
 # GET TASKS (ROLE BASED)
 # =========================
 @router.get("/")
-def get_tasks(role: str, user_id: int, db: Session = Depends(get_db)):
+def get_tasks(
+    role: Optional[str] = None,
+    user_id: Optional[int] = None,
+    db: Session = Depends(get_db)
+):
 
     if role == "admin":
         return db.query(Task).all()
 
-    return db.query(Task).filter(Task.assigned_to == user_id).all()
+    if user_id:
+        return db.query(Task).filter(Task.assigned_to == user_id).all()
+
+    return db.query(Task).all()
+
+# =========================
+# GET TASKS (ROLE BASED)
+# =========================
 
 
 # =========================

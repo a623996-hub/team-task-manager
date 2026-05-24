@@ -21,9 +21,10 @@ class ProjectCreate(BaseModel):
 class TaskCreate(BaseModel):
     title: str
     description: str
+    due_date: Optional[str] = None
     project_id: int
     assigned_to: int
-    due_date: Optional[date] = None
+   
 
 
 
