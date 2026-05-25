@@ -69,9 +69,6 @@ def get_tasks(
 
     return db.query(Task).all()
 
-# =========================
-# GET TASKS (ROLE BASED)
-# =========================
 
 
 # =========================
@@ -91,13 +88,15 @@ def update_task(task_id: int, data: StatusUpdate, db: Session = Depends(get_db))
 
     return {"message": "Task updated successfully"}
 
+
+
 @router.delete("/{task_id}")
 def delete_task(task_id: int, db: Session = Depends(get_db)):
 
     task = db.query(Task).filter(Task.id == task_id).first()
 
     if not task:
-        return {"error": "Task not found"}
+        raise HTTPException(status_code=404, detail="Task not found")
 
     db.delete(task)
     db.commit()
